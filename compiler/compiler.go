@@ -3,7 +3,6 @@ package compiler
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -82,8 +81,10 @@ func compile(ctx *SassContext, inputPath string, outputPath string) error {
 
 	// Print out stderr
 	if len(stderrBytes) > 0 {
-		for _, line := range strings.Split(string(stderrBytes), "\n") {
-			log.Print(line)
+		stderrLines := strings.Split(string(stderrBytes), "\n")
+
+		for _, line := range stderrLines {
+			fileLog(false, inputPath, line)
 		}
 	}
 

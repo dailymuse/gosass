@@ -121,12 +121,6 @@ func (self *SassWatcher) listener() {
 				if err != nil {
 					fileLog(false, event.Name, "Could not stage for compilation: %s", err.Error())
 				}
-			} else if event.Op&fsnotify.Remove == fsnotify.Remove {
-				err := os.RemoveAll(self.ctx.resolveOutputPath(event.Name))
-
-				if err != nil {
-					fileLog(false, event.Name, "Could not remove: %s", err.Error())
-				}
 			}
 		case err := <-self.watcher.Errors:
 			if err != nil {

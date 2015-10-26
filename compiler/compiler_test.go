@@ -23,7 +23,7 @@ func TestFindCompilable(t *testing.T) {
 
 	//Set up error buffer.
 	var buf bytes.Buffer
-    log.SetOutput(&buf)
+	log.SetOutput(&buf)
 	
 	//do the actual call
 	compilable := findCompilable(ctx)
@@ -31,10 +31,10 @@ func TestFindCompilable(t *testing.T) {
 	//restore log output to its normal stderr
 	log.SetOutput(os.Stderr)
     
-    //and finally make sure we did get the output error we expected.
-    if (len(buf.String()) == 0) {
-    	t.Error()
-    }
+    	//and finally make sure we did get the output error we expected.
+    	if (len(buf.String()) == 0) {
+    		t.Error()
+    	}
 	
 
 	if len(compilable) != 0 {

@@ -13,8 +13,6 @@ const EXPECTED_SIMPLE_COMPILE = `body {
 `
 
 func TestFindCompilable(t *testing.T) {
-	t.Parallel()
-
 	ctx := NewSassContext(NewSassCommand(), "../integration/bad-src", "../integration/out")
 
 	//The following line is expected to employ fileLogCompilationError which will use log to

@@ -3,6 +3,9 @@ package compiler
 import (
 	"io/ioutil"
 	"testing"
+	"log"
+	"bytes"
+	"os"
 )
 
 const EXPECTED_SIMPLE_COMPILE = `body {
@@ -10,10 +13,27 @@ const EXPECTED_SIMPLE_COMPILE = `body {
 `
 
 func TestFindCompilable(t *testing.T) {
-	t.Parallel()
-
 	ctx := NewSassContext(NewSassCommand(), "../integration/bad-src", "../integration/out")
+
+	//The following line is expected to employ fileLogCompilationError which will use log to
+	//output an error.  By redirecting the output of log temporarily, we can both test that
+	//this error takes place and avoid outputing to stderr during a succesful test.
+
+	//Set up error buffer.
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	
+	//do the actual call
 	compilable := findCompilable(ctx)
+	
+	//restore log output to its normal stderr
+	log.SetOutput(os.Stderr)
+    
+    	//and finally make sure we did get the output error we expected.
+    	if (len(buf.String()) == 0) {
+    		t.Error()
+    	}
+	
 
 	if len(compilable) != 0 {
 		t.Error()

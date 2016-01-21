@@ -1,11 +1,11 @@
 package compiler
 
 import (
-	"io/ioutil"
-	"testing"
-	"log"
 	"bytes"
+	"io/ioutil"
+	"log"
 	"os"
+	"testing"
 )
 
 const EXPECTED_SIMPLE_COMPILE = `body {
@@ -22,18 +22,17 @@ func TestFindCompilable(t *testing.T) {
 	//Set up error buffer.
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
-	
+
 	//do the actual call
 	compilable := findCompilable(ctx)
-	
+
 	//restore log output to its normal stderr
 	log.SetOutput(os.Stderr)
-    
-    	//and finally make sure we did get the output error we expected.
-    	if (len(buf.String()) == 0) {
-    		t.Error()
-    	}
-	
+
+	//and finally make sure we did get the output error we expected.
+	if len(buf.String()) == 0 {
+		t.Error()
+	}
 
 	if len(compilable) != 0 {
 		t.Error()
@@ -42,7 +41,11 @@ func TestFindCompilable(t *testing.T) {
 	ctx = NewSassContext(NewSassCommand(), "../integration/src", "../integration/out")
 	compilable = findCompilable(ctx)
 
-	if len(compilable) != 3 {
+	if len(compilable) != 5 {
+		t.Error()
+	}
+
+	if compilable["../integration/src/01.simple.scss"] != "../integration/out/01.simple.css" {
 		t.Error()
 	}
 
@@ -54,7 +57,11 @@ func TestFindCompilable(t *testing.T) {
 		t.Error()
 	}
 
-	if compilable["../integration/src/01.simple.scss"] != "../integration/out/01.simple.css" {
+	if compilable["../integration/src/04.missing.scss"] != "../integration/out/04.missing.css" {
+		t.Error()
+	}
+
+	if compilable["../integration/src/05.rawcss.scss"] != "../integration/out/05.rawcss.css" {
 		t.Error()
 	}
 }

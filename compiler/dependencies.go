@@ -1,7 +1,9 @@
 package compiler
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"regexp"
 )
@@ -19,6 +21,29 @@ func NewSassDependencyResolver(filecache *FileCache) *SassDependencyResolver {
 		filecache:   filecache,
 		shallowDeps: make(map[string][]string, 100),
 		deepDeps:    make(map[string][]string, 100),
+	}
+}
+
+// Resolves the path of a given import
+func resolveRefPath(basePath string, ref string) (string, error) {
+	sassImportPath := filepath.Join(basePath, filepath.Dir(ref), fmt.Sprintf("_%s.scss", filepath.Base(ref)))
+	stat, err := os.Stat(sassImportPath)
+
+	if err == nil && !stat.IsDir() {
+		return sassImportPath, nil
+	} else if err != nil && !os.IsNotExist(err) {
+		return "", errors.New(fmt.Sprintf("Error when trying to stat ref `%s` (which resolved to '%s'): %s", ref, sassImportPath, err.Error()))
+	}
+
+	cssImportPath := filepath.Join(basePath, filepath.Dir(ref), fmt.Sprintf("%s.css", filepath.Base(ref)))
+	stat, err = os.Stat(cssImportPath)
+
+	if err == nil && !stat.IsDir() {
+		return cssImportPath, nil
+	} else if err != nil && !os.IsNotExist(err) {
+		return "", errors.New(fmt.Sprintf("Error when trying to stat ref `%s` (which resolved to '%s'): %s", ref, cssImportPath, err.Error()))
+	} else {
+		return "", errors.New(fmt.Sprintf("Could not find ref `%s` (tried '%s' and '%s')", ref, sassImportPath, cssImportPath))
 	}
 }
 
@@ -43,8 +68,13 @@ func (self *SassDependencyResolver) shallowResolve(path string) ([]string, error
 
 	for i, match := range matches {
 		ref := string(match[2])
-		refPath := filepath.Join(filepath.Dir(ref), fmt.Sprintf("_%s.scss", filepath.Base(ref)))
-		deps[i] = filepath.Join(filepath.Dir(path), refPath)
+		refPath, err := resolveRefPath(filepath.Dir(path), ref)
+
+		if err != nil {
+			return nil, err
+		}
+
+		deps[i] = refPath
 	}
 
 	self.shallowDeps[path] = deps

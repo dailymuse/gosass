@@ -11,7 +11,7 @@ func TestIsSassFile(t *testing.T) {
 		t.Error()
 	}
 
-	if isSassFile("foo/bar.css") {
+	if !isSassFile("foo/bar.css") {
 		t.Error()
 	}
 }

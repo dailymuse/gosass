@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -48,11 +49,32 @@ func checkArray(name string, t *testing.T, actual []string, expected ...string) 
 	}
 }
 
+func TestResolveRefPath(t *testing.T) {
+	t.Parallel()
+
+	sassPath, err := resolveRefPath(".", relPath("includes/first"))
+
+	if err != nil {
+		t.Error(err)
+	} else if sassPath != "../integration/src/includes/_first.scss" {
+		t.Error(fmt.Sprintf("Unexpected path: %s", sassPath))
+	}
+
+	cssPath, err := resolveRefPath(".", relPath("includes/fourth"))
+
+	if err != nil {
+		t.Error(err)
+	} else if cssPath != "../integration/src/includes/fourth.css" {
+		t.Error(fmt.Sprintf("Unexpected path: %s", cssPath))
+	}
+}
+
 func TestShallowResolve(t *testing.T) {
 	t.Parallel()
 
 	resolver := NewSassDependencyResolver(NewFileCache())
 
+	// Check simple resolution
 	deps, err := resolver.shallowResolve(relPath("01.simple.scss"))
 
 	if err != nil {
@@ -61,12 +83,29 @@ func TestShallowResolve(t *testing.T) {
 		t.Error(deps)
 	}
 
+	// Check resolution of multiple imports
 	deps, err = resolver.shallowResolve(relPath("03.multiple-imports.scss"))
 
 	if err != nil {
 		t.Error(err)
 	} else {
 		checkArray("shallow-resolve:1", t, deps, relPath("includes/_first.scss"), relPath("includes/_second.scss"))
+	}
+
+	// Check that an error happens when trying to resolve a missing import
+	deps, err = resolver.shallowResolve(relPath("04.missing.scss"))
+
+	if err == nil {
+		t.Error("Expected an error when resolving dependencies for 04.missing.scss")
+	}
+
+	// Check resolution of a CSS dependency
+	deps, err = resolver.shallowResolve(relPath("05.rawcss.scss"))
+
+	if err != nil {
+		t.Error(err)
+	} else {
+		checkArray("shallow-resolve:2", t, deps, relPath("includes/fourth.css"))
 	}
 }
 
@@ -100,12 +139,26 @@ func TestResolve(t *testing.T) {
 		checkArray("resolve:2", t, deps, absPath("includes/_first.scss"), absPath("includes/_second.scss"), absPath("includes/_third.scss"))
 	}
 
+	deps, err = resolver.Resolve(relPath("04.missing.scss"))
+
+	if err == nil {
+		t.Error("Expected an error when resolving a missing import")
+	}
+
+	deps, err = resolver.Resolve(relPath("05.rawcss.scss"))
+
+	if err != nil {
+		t.Error(err)
+	} else {
+		checkArray("resolve:3", t, deps, absPath("includes/fourth.css"))
+	}
+
 	deps, err = resolver.Resolve(relPath("includes/_second.scss"))
 
 	if err != nil {
 		t.Error(err)
 	} else {
-		checkArray("resolve:3", t, deps, absPath("includes/_third.scss"))
+		checkArray("resolve:4", t, deps, absPath("includes/_third.scss"))
 	}
 
 	// Reverse resolve one
@@ -114,7 +167,7 @@ func TestResolve(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	} else {
-		checkArray("resolve:4", t, deps, absPath("03.multiple-imports.scss"), absPath("includes/_second.scss"))
+		checkArray("resolve:5", t, deps, absPath("03.multiple-imports.scss"), absPath("includes/_second.scss"))
 	}
 
 	// Invalidate an item
@@ -130,7 +183,7 @@ func TestResolve(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	} else {
-		checkArray("resolve:5", t, deps, absPath("03.multiple-imports.scss"))
+		checkArray("resolve:6", t, deps, absPath("03.multiple-imports.scss"))
 	}
 
 	// Make sure re-resolving a file includes all dependencies (including invalidated ones)
@@ -139,6 +192,6 @@ func TestResolve(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	} else {
-		checkArray("resolve:6", t, deps, absPath("includes/_first.scss"), absPath("includes/_second.scss"), absPath("includes/_third.scss"))
+		checkArray("resolve:7", t, deps, absPath("includes/_first.scss"), absPath("includes/_second.scss"), absPath("includes/_third.scss"))
 	}
 }

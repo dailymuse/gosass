@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 // Stores contextual information for CLI invocations
@@ -27,6 +28,7 @@ func NewSassContext(cmd *SassCommand, inputPath string, outputPath string) *Sass
 
 func (self *SassContext) AddPlugin(path string) {
 	plugin := pingo.NewPlugin("unix", path)
+	plugin.SetTimeout(30 * time.Second)
 	self.plugins = append(self.plugins, plugin)
 }
 

@@ -6,12 +6,7 @@ before_install:
   - git clone https://github.com/sass/sassc.git ~/sassc && cd ~/sassc && git checkout tags/3.1.0 && SASS_LIBSASS_PATH=../libsass make
   - mkdir -p ~/bin
   - ln -s ~/sassc/bin/sassc ~/bin/
-  # Debugging statements to help with an issue
-  - ls -l ~/libsass
-  - ls -l ~/sassc
-  - ls -l ~/sassc/bin
-  - ls -l ~/bin
-  - which sassc
+  - cd $TRAVIS_BUILD_DIR
 install: make deps
 script: make unittests
 env:

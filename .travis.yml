@@ -12,6 +12,9 @@ before_install:
   - mkdir -p ~/bin
   - ln -s ~/sassc/bin/sassc ~/bin/
   # Debugging statements to help with an issue
+  - ls -l ~/libsass
+  - ls -l ~/sassc
+  - ls -l ~/sassc/bin
   - ls -l ~/bin
   - which sassc
 install: make deps

@@ -1,4 +1,4 @@
-# gosass #
+# gosass [![Build Status](https://travis-ci.org/dailymuse/gosass.png)](https://travis-ci.org/dailymuse/gosass) #
 
 ## About ##
 

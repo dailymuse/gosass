@@ -14,4 +14,4 @@ before_install:
 install: make deps
 script: make unittests
 env:
-  - PATH=~/bin:$PATH
+  - PATH=/home/travis/bin/:$PATH

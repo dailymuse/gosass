@@ -9,6 +9,7 @@ install: build
 
 deps:
 	go get -u gopkg.in/fsnotify.v1
+	go get -u github.com/dullgiulio/pingo
 
 unittests:
 	mkdir -p integration/out

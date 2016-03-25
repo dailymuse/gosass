@@ -18,9 +18,10 @@ func (self *SassCommand) AddArgument(arg string) {
 	self.Args = append(self.Args, arg)
 }
 
-func (self *SassCommand) Create(inputFilePath string) *exec.Cmd {
-	args := make([]string, len(self.Args)+1)
+func (self *SassCommand) Create(inputFilePath string, outputFilePath string) *exec.Cmd {
+	args := make([]string, len(self.Args)+2)
 	copy(args, self.Args)
-	args[len(args)-1] = inputFilePath
+	args[len(args)-2] = inputFilePath
+	args[len(args)-1] = outputFilePath
 	return exec.Command("sassc", args...)
 }

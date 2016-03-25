@@ -1,7 +1,6 @@
 package compiler
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -37,7 +36,7 @@ func compile(ctx *SassContext, inputPath string, outputPath string) error {
 	}
 
 	// Create the command and grab stdout/stderr
-	cmd := ctx.cmd.Create(inputPath)
+	cmd := ctx.cmd.Create(inputPath, outputPath)
 
 	// Grab stdout
 	stdout, err := cmd.StdoutPipe()
@@ -62,13 +61,6 @@ func compile(ctx *SassContext, inputPath string, outputPath string) error {
 		return err
 	}
 
-	// Handle stdout
-	stdoutBytes, err := ioutil.ReadAll(stdout)
-
-	if err != nil {
-		return err
-	}
-
 	// Handle stderr
 	stderrBytes, err := ioutil.ReadAll(stderr)
 
@@ -89,33 +81,7 @@ func compile(ctx *SassContext, inputPath string, outputPath string) error {
 	}
 
 	// Return any error that happened on process.Wait()
-	if waitErr != nil {
-		return waitErr
-	}
-
-	// Process the results
-	stdoutString := string(stdoutBytes)
-
-	for _, plugin := range ctx.plugins {
-		objs, err := plugin.Objects()
-
-		if err != nil {
-			return err
-		}
-
-		for _, obj := range objs {
-			var newStdoutString string
-			err = plugin.Call(fmt.Sprintf("%s.ProcessCss", obj), stdoutString, &newStdoutString)
-
-			if err != nil {
-				return err
-			}
-
-			stdoutString = newStdoutString
-		}
-	}
-
-	return ioutil.WriteFile(outputPath, []byte(stdoutString), os.ModePerm)
+	return waitErr
 }
 
 // Compiles many files, as a mapping of input file path -> output file path

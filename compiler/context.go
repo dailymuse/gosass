@@ -2,11 +2,9 @@ package compiler
 
 import (
 	"fmt"
-	"github.com/dullgiulio/pingo"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 // Stores contextual information for CLI invocations
@@ -14,7 +12,6 @@ type SassContext struct {
 	cmd        *SassCommand
 	inputPath  string
 	outputPath string
-	plugins    []*pingo.Plugin
 }
 
 func NewSassContext(cmd *SassCommand, inputPath string, outputPath string) *SassContext {
@@ -22,25 +19,6 @@ func NewSassContext(cmd *SassCommand, inputPath string, outputPath string) *Sass
 		cmd:        cmd,
 		inputPath:  inputPath,
 		outputPath: outputPath,
-		plugins:    []*pingo.Plugin{},
-	}
-}
-
-func (self *SassContext) AddPlugin(path string) {
-	plugin := pingo.NewPlugin("unix", path)
-	plugin.SetTimeout(30 * time.Second)
-	self.plugins = append(self.plugins, plugin)
-}
-
-func (self *SassContext) Start() {
-	for _, plugin := range self.plugins {
-		plugin.Start()
-	}
-}
-
-func (self *SassContext) Stop() {
-	for _, plugin := range self.plugins {
-		plugin.Stop()
 	}
 }
 

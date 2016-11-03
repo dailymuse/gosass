@@ -8,7 +8,7 @@ import (
 	"regexp"
 )
 
-var importPattern = regexp.MustCompile("\\@import (\\'|\\\")([^'\"]+)(\\'|\\\")")
+var importPattern = regexp.MustCompile("(?m)^\\s*([^/]?)\\s*\\@import (\\'|\\\")([^'\"]+)(\\'|\\\")")
 
 type SassDependencyResolver struct {
 	filecache   *FileCache
@@ -26,7 +26,15 @@ func NewSassDependencyResolver(filecache *FileCache) *SassDependencyResolver {
 
 // Resolves the path of a given import
 func resolveRefPath(basePath string, ref string) (string, error) {
-	sassImportPath := filepath.Join(basePath, filepath.Dir(ref), fmt.Sprintf("_%s.scss", filepath.Base(ref)))
+	var filename string
+	if filepath.Ext(ref) == "" {
+		filename = fmt.Sprintf("_%s.scss", filepath.Base(ref))
+	} else {
+		filename = filepath.Base(ref)
+
+	}
+	sassImportPath := filepath.Join(basePath, filepath.Dir(ref), filename)
+
 	stat, err := os.Stat(sassImportPath)
 
 	if err == nil && !stat.IsDir() {
@@ -67,7 +75,7 @@ func (self *SassDependencyResolver) shallowResolve(path string) ([]string, error
 	deps = make([]string, len(matches))
 
 	for i, match := range matches {
-		ref := string(match[2])
+		ref := string(match[3])
 		refPath, err := resolveRefPath(filepath.Dir(path), ref)
 
 		if err != nil {

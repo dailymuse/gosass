@@ -41,7 +41,7 @@ func TestFindCompilable(t *testing.T) {
 	ctx = NewSassContext(NewSassCommand(), "../integration/src", "../integration/out")
 	compilable = findCompilable(ctx)
 
-	if len(compilable) != 5 {
+	if len(compilable) != 6 {
 		t.Error()
 	}
 
@@ -62,6 +62,10 @@ func TestFindCompilable(t *testing.T) {
 	}
 
 	if compilable["../integration/src/05.rawcss.scss"] != "../integration/out/05.rawcss.css" {
+		t.Error()
+	}
+
+	if compilable["../integration/src/06.direct-import.scss"] != "../integration/out/06.direct-import.css" {
 		t.Error()
 	}
 }
@@ -85,4 +89,23 @@ func TestCompile(t *testing.T) {
 	if string(b) != EXPECTED_SIMPLE_COMPILE {
 		t.Errorf("Unexpected compiled results: %s", string(b))
 	}
+}
+
+func TestDirectImport(t *testing.T) {
+	ctx := NewSassContext(NewSassCommand(), "../integration/src", "../integration/out")
+	err := compile(ctx, "../integration/src/06.direct-import.scss", "../integration/out/06.direct-import.css")
+	if err != nil {
+		t.Error(err)
+	}
+
+	b, err := ioutil.ReadFile("../integration/out/06.direct-import.css")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if string(b) != EXPECTED_SIMPLE_COMPILE {
+		t.Errorf("Unexpected compiled results: %s", string(b))
+	}
+
 }

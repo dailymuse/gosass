@@ -64,7 +64,36 @@ func NewSassWatcher(ctx *SassContext) (*SassWatcher, error) {
 }
 
 func (self *SassWatcher) stage(path string) error {
-	// Ignore non-scss files
+
+	//If this is a directory, we'll need to add it to the watch list.
+	info, directoryErr := os.Stat(path)
+
+	//Even if this isn't a directory, we should still be able to stat it.
+	if directoryErr != nil {
+		return directoryErr
+	}
+
+	if info.IsDir() {
+		fileLog(false, path, "Adding newly created directory to watch list.")
+		self.watcher.Add(path)
+
+		// Add subdirectories to be watched
+		directoryErr = filepath.Walk(path, func(path string, info os.FileInfo, directoryErr error) error {
+			if directoryErr != nil {
+				return directoryErr
+			} else if info.IsDir() {
+				self.watcher.Add(path)
+			}
+
+			return nil
+		})
+
+		if directoryErr != nil {
+			return directoryErr
+		}
+	}
+
+	// If it's not a directory, and not a Sass file, we don't want it.
 	if !isSassFile(path) {
 		return nil
 	}
